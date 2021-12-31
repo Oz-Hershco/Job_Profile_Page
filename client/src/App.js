@@ -18,12 +18,16 @@ function App() {
     if (storageData) {
       dispatch(update(storageData));
     } else {
-      fetch("/profile")
+      fetch("/profile/iSrl7Oiz8U9mczAJgyNL")
         .then((res) => res.json())
         .then((data) => {
+          if (data.code === 2) {
+            console.error("Error: (" + data.code + ") " + data.message);
+            return;
+          }
           dispatch(update(data));
-          localStorage.setItem("profile", JSON.stringify(data))
-        });
+          //localStorage.setItem("profile", JSON.stringify(data))
+        })
     }
 
 
