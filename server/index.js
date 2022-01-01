@@ -31,7 +31,7 @@ signInAnonymously(auth)
     });
 
 
-// const path = require('path');
+const path = require('path');
 const express = require("express");
 
 const PORT = process.env.PORT || 3001;
