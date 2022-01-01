@@ -1,9 +1,11 @@
 //ERROR CODES:
 //1 - Firebase doc does not exist under id
 //2 - Required Id param is missing
+//2 - Data for post request is missing
+//200 - Successfully completed(profile update/other)
 
 const getFirebaseApp = require("firebase/app");
-const { getFirestore, getDoc, doc } = require("firebase/firestore");
+const { getFirestore, getDoc, setDoc, doc } = require("firebase/firestore");
 const firebaseConfig = {
     apiKey: "AIzaSyAKpJ94ci7CytwBZjeJTEK8176svyK4JZg",
     authDomain: "jobprofilepagepurple.firebaseapp.com",
@@ -32,7 +34,12 @@ const express = require("express");
 const PORT = process.env.PORT || 3001;
 
 const app = express();
-
+app.use(
+    express.urlencoded({
+        extended: true
+    })
+);
+app.use(express.json());
 
 // app.use(express.static(path.resolve(__dirname, '../client/build')));
 
@@ -64,6 +71,26 @@ app.get("/profile/:id", async (req, res) => {
 });
 
 //update profile using id
+app.post("/profile/update", async (req, res) => {
+    var newProfiledata = req.body;
+    if (newProfiledata) {
+        const userRef = doc(db, 'users', newProfiledata.uid);
+        //handle here image storage and update doc with link once uploaded
+        const setDocRef = await setDoc(userRef, newProfiledata, { merge: true });
+        res.json({
+            message: "Profile updated successfuly",
+            code: 200
+        });
+        console.log(setDocRef)
+
+    } else {
+        res.json({
+            message: "Need data to continue the request!",
+            code: 3
+        });
+    }
+
+})
 // app.get('*', (req, res) => {
 //   res.sendFile(path.resolve(__dirname, '../client/build', 'index.html'));
 // });

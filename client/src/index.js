@@ -10,8 +10,18 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 
 
+const theme = {
+  logo: {
+    width: 100,
+    topBarSource:
+      '/images/purple_logo.png',
+    url: 'https://www.prpl.io/',
+    accessibilityLabel: 'Purple Software Playground',
+  },
+};
+
 ReactDOM.render(
-  <AppProvider i18n={enTranslations}>
+  <AppProvider theme={theme} i18n={enTranslations}>
     <Provider store={store}>
       <App />
     </Provider>

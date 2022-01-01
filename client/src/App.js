@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { update } from './Redux/profile/profileSlice';
-import { Page, Card, Button } from '@shopify/polaris';
+import { Page, Card, Layout, Frame, TopBar, Avatar } from '@shopify/polaris';
 
 import './App.css';
+import ProfileForm from './Components/ProfileForm/ProfileForm';
 
 
 
@@ -33,17 +34,27 @@ function App() {
 
   }, []);
 
+  const handleProfileSave = () => {
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(profile)
+    };
+    fetch('/profile/update', requestOptions)
+      .then(response => response.json())
+      .then(data => console.log(data));
+  }
   console.log(profile);
 
   return (
     <div className="App">
       {
         profile ? (
-          <Page title="Example app">
-            <Card sectioned>
-              {profile.company}
-              <Button onClick={() => alert('Button clicked!')}>Example button</Button>
-            </Card>
+          <Page narrowWidth>
+            <ProfileForm />
+            <Frame className="test" topBar={
+              <TopBar userMenu={<Avatar source={profile.profile_image_url} />} />
+            } />
           </Page>
         ) : null
       }
