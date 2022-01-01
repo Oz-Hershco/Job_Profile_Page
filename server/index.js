@@ -6,6 +6,7 @@
 
 const getFirebaseApp = require("firebase/app");
 const { getFirestore, getDoc, setDoc, doc } = require("firebase/firestore");
+const { getAuth, signInAnonymously } = require("firebase/auth");
 const firebaseConfig = {
     apiKey: "AIzaSyAKpJ94ci7CytwBZjeJTEK8176svyK4JZg",
     authDomain: "jobprofilepagepurple.firebaseapp.com",
@@ -18,15 +19,17 @@ const firebaseConfig = {
 
 const fbApp = getFirebaseApp.initializeApp(firebaseConfig);
 const db = getFirestore(fbApp);
+const auth = getAuth();
+signInAnonymously(auth)
+    .then(() => {
+        // Signed in..
+    })
+    .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        // ...
+    });
 
-// var profileData = {
-//     uid: 'L0j7cZxVokkgLFkRRTtC',
-//     profile_image_url: 'https://ozhershco.me/images/profilepic.jpeg',
-//     title: 'Developer',
-//     company: 'Purple',
-//     about: 'This is some information about me. Pretty great right??',
-//     phone: '0546912114'
-// };
 
 // const path = require('path');
 const express = require("express");
@@ -72,6 +75,7 @@ app.get("/profile/:id", async (req, res) => {
 
 //update profile using id
 app.post("/profile/update", async (req, res) => {
+
     var newProfiledata = req.body;
     if (newProfiledata) {
         const userRef = doc(db, 'users', newProfiledata.uid);
@@ -81,8 +85,6 @@ app.post("/profile/update", async (req, res) => {
             message: "Profile updated successfuly",
             code: 200
         });
-        console.log(setDocRef)
-
     } else {
         res.json({
             message: "Need data to continue the request!",

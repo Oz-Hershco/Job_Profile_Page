@@ -1,17 +1,18 @@
 import React, { useCallback, useState, useEffect } from 'react'
-import ReactCrop from 'react-image-crop';
+import CropperModal from '../CropperModal/CropperModal';
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { useDispatch, useSelector } from 'react-redux';
 import { update } from '../../Redux/profile/profileSlice';
-import { Form, FormLayout, TextField, Button, Card, DropZone, Caption, Select } from '@shopify/polaris';
+import { ProgressBar, Form, FormLayout, TextField, Button, Card, DropZone, Caption, Select } from '@shopify/polaris';
 import { NoteMinor } from '@shopify/polaris-icons';
-import 'react-image-crop/dist/ReactCrop.css';
 import './ProfileForm.css';
-
-// The image should be Crop option to size 16:9 
-// Short description about yourself - Should be able to add bullets, bold text, and colors 
+import { storage } from '../../Firebase/firebase';
 
 export default function ProfileForm() {
 
+    const [isCropModalShown, setIsCropModalShown] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const [downloadingPerc, setDownloadingPerc] = useState(0);
     const [file, setFile] = useState();
     const [jobTitle, setJobTitle] = useState('');
     const [currentCompany, setCurrentCompany] = useState('');
@@ -35,34 +36,61 @@ export default function ProfileForm() {
     }, [])
 
     const handleSubmit = () => {
-        var newProfileData = {
-            uid: profile.uid,
-            //image url will be updated after link has returned from server
-            profile_image_url: window.URL.createObjectURL(file),
-            title: jobTitle,
-            company: currentCompany,
-            about: about,
-            phone: phone,
-            area: areacode
-        };
-        // console.log(newProfileData)
-        dispatch(update(newProfileData))
-        // localStorage.setItem("profile", JSON.stringify(newProfileData))
 
-        // setFile(null);
-        // setJobTitle('');
-        // setCurrentCompany('');
-        // setAbout('');
-        // setPhone('');
+        const imageRef = ref(storage, profile.uid + '/' + profile.uid);
+        const uploadTask = uploadBytesResumable(imageRef, file);
+
+        uploadTask.on('state_changed',
+            (snapshot) => {
+                setIsUploading(true);
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                setDownloadingPerc(progress);
+            },
+            (error) => {
+                // Handle unsuccessful uploads
+                setIsUploading(false);
+            },
+            () => {
+                getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                    var newProfileData = {
+                        uid: profile.uid,
+                        profile_image_url: downloadURL,
+                        title: jobTitle,
+                        company: currentCompany,
+                        about: about,
+                        phone: phone,
+                        areacode: areacode
+                    };
+
+                    const requestOptions = {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newProfileData)
+                    };
+                    fetch('/profile/update', requestOptions)
+                        .then(response => response.json())
+                        .then(data => {
+                            dispatch(update(newProfileData))
+                            setIsUploading(false);
+                        }).catch(() => {
+                            setIsUploading(false);
+                        });
+                });
+            }
+        );
     };
+
+    const handleCropped = (croppedImage) => {
+        setFile(croppedImage);
+    }
 
     const isSaveButtonDisabled = () => {
         const phoneRegex = /^\+?(972|0)(\-)?0?(([23489]{1}\d{7})|[5]{1}\d{8})$/;
-        return file === null || jobTitle.length === 0 || currentCompany.length === 0 || about.length === 0 || phone.length === 0 || phoneRegex.test(phone) === false;
+        return file === null || jobTitle.length === 0 || currentCompany.length === 0 || about.length === 0 || phone.length === 0 || phoneRegex.test(phone) === false || isUploading;
     }
     const handleDropZoneDrop = useCallback(
         (_dropFiles, acceptedFiles, _rejectedFiles) =>
-            setFile((file) => acceptedFiles[0]),
+            {setFile((file) => acceptedFiles[0]); setIsCropModalShown(true)},
         [],
     );
     const handleJobTitleChange = useCallback((value) => setJobTitle(value), []);
@@ -73,8 +101,8 @@ export default function ProfileForm() {
 
     const validImageTypes = ['image/gif', 'image/jpeg', 'image/png'];
 
-    const fileUpload = !file && <DropZone.FileUpload />;
-    const uploadedFile = file && (
+    const fileUpload = !file && !profile.profile_image_url && <DropZone.FileUpload />;
+    const uploadedFile = file ? (
         <div>
             <img
                 width="100%"
@@ -92,6 +120,18 @@ export default function ProfileForm() {
             <div>
                 {file.name} <Caption>{file.size} bytes</Caption>
             </div>
+        </div>
+    ) : (
+        <div>
+            <img
+                width="100%"
+                height="100%"
+                style={{
+                    objectFit: 'cover',
+                    objectPosition: 'center',
+                }}
+                alt='profile'
+                src={profile.profile_image_url} />
         </div>
     );
 
@@ -155,8 +195,16 @@ export default function ProfileForm() {
                         </div>
                     </FormLayout>
                 </Form>
+                {
+                    isUploading &&
+                    (
+                        <div className='ProgressBar-Container'>
+                            <ProgressBar progress={downloadingPerc} size="small" />
+                        </div>
+                    )
+                }
             </Card>
-
+            <CropperModal img={file ? window.URL.createObjectURL(file) : ''} active={isCropModalShown} setActive={setIsCropModalShown} onCropped={handleCropped}/>
         </div>
     )
 }

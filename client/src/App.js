@@ -1,7 +1,9 @@
 import React, { useEffect } from 'react';
+import { onAuthStateChanged, signInAnonymously } from "firebase/auth";
+import { auth } from './Firebase/firebase';
 import { useDispatch, useSelector } from 'react-redux';
 import { update } from './Redux/profile/profileSlice';
-import { Page, Card, Layout, Frame, TopBar, Avatar } from '@shopify/polaris';
+import { Page, Frame, TopBar, Avatar } from '@shopify/polaris';
 
 import './App.css';
 import ProfileForm from './Components/ProfileForm/ProfileForm';
@@ -10,41 +12,56 @@ import ProfileForm from './Components/ProfileForm/ProfileForm';
 
 function App() {
 
+
   const profile = useSelector((state) => state.profile.value);
   const dispatch = useDispatch();
 
   useEffect(() => {
-    //for testing only - remove before deployment
-    const storageData = JSON.parse(localStorage.getItem("profile"))
-    if (storageData) {
-      dispatch(update(storageData));
-    } else {
-      fetch("/profile/iSrl7Oiz8U9mczAJgyNL")
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.code === 2) {
-            console.error("Error: (" + data.code + ") " + data.message);
-            return;
-          }
-          dispatch(update(data));
-          //localStorage.setItem("profile", JSON.stringify(data))
-        })
-    }
+
+
+    signInAnonymously(auth)
+      .then(() => {
+        // Signed in..
+      })
+      .catch((error) => {
+        // ...
+      });
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+
+        const uid = user.uid;
+
+        fetch(`/profile/${uid}`)
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.code === 2) {
+              console.error("Error: (" + data.code + ") " + data.message);
+              return;
+            }
+            dispatch(update(data));
+          }).catch(() => {
+
+            dispatch(update({
+              uid: uid,
+              profile_image_url: '',
+              title: '',
+              company: '',
+              about: '',
+              phone: '',
+              areacode: '+972'
+            }));
+
+          })
+        // ...
+      } else {
+        // User is signed out
+        // ...
+      }
+    });
 
 
   }, []);
-
-  const handleProfileSave = () => {
-    const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(profile)
-    };
-    fetch('/profile/update', requestOptions)
-      .then(response => response.json())
-      .then(data => console.log(data));
-  }
-  console.log(profile);
 
   return (
     <div className="App">

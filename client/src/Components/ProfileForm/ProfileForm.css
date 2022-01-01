@@ -1,26 +1,29 @@
-
-.ProfileForm .profileImage{
-    max-width:100%;
+.ProfileForm .profileImage {
+    max-width: 100%;
 }
 
-.ProfileForm .Polaris-DropZone.Polaris-DropZone--hasOutline.Polaris-DropZone--sizeLarge{
+.ProfileForm .Polaris-DropZone.Polaris-DropZone--hasOutline.Polaris-DropZone--sizeLarge {
     margin: 1.5em 1.5em 0 1.5em;
 }
 
-.ProfileForm .Polaris-Card{
+.ProfileForm .Polaris-Card {
     padding-bottom: 1.5em;
 }
 
-.Save-Btn-Container{
+.Save-Btn-Container {
     display: flex;
     justify-content: flex-end;
 }
 
-.ProfileForm .Polaris-Button{
-    background-color: #734EE1;
+.ProfileForm .Polaris-Button {
+    background-color: #734ee1;
     color: white;
 }
 
-.ProfileForm .Polaris-Button.Polaris-Button--disabled{
-    opacity: .5;
+.ProfileForm .Polaris-Button.Polaris-Button--disabled {
+    opacity: 0.5;
+}
+
+.ProfileForm .ProgressBar-Container {
+    margin-top: 2em;
 }
