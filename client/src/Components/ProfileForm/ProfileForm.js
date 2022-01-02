@@ -85,12 +85,11 @@ export default function ProfileForm() {
     }
 
     const isSaveButtonDisabled = () => {
-        const phoneRegex = /^\+?(972|0)(\-)?0?(([23489]{1}\d{7})|[5]{1}\d{8})$/;
+        const phoneRegex = /^\(?([0-9]{2})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
         return file === null || jobTitle.length === 0 || currentCompany.length === 0 || about.length === 0 || phone.length === 0 || phoneRegex.test(phone) === false || isUploading;
     }
     const handleDropZoneDrop = useCallback(
-        (_dropFiles, acceptedFiles, _rejectedFiles) =>
-            {setFile((file) => acceptedFiles[0]); setIsCropModalShown(true)},
+        (_dropFiles, acceptedFiles, _rejectedFiles) => { setFile((file) => acceptedFiles[0]); setIsCropModalShown(true) },
         [],
     );
     const handleJobTitleChange = useCallback((value) => setJobTitle(value), []);
@@ -204,7 +203,7 @@ export default function ProfileForm() {
                     )
                 }
             </Card>
-            <CropperModal img={file ? window.URL.createObjectURL(file) : ''} active={isCropModalShown} setActive={setIsCropModalShown} onCropped={handleCropped}/>
+            <CropperModal img={file ? window.URL.createObjectURL(file) : ''} active={isCropModalShown} setActive={setIsCropModalShown} onCropped={handleCropped} />
         </div>
     )
 }
