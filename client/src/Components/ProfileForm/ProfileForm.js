@@ -35,6 +35,7 @@ export default function ProfileForm() {
         }
     }, [])
 
+
     const handleSubmit = () => {
 
         const imageRef = ref(storage, profile.uid + '/' + profile.uid);
@@ -86,7 +87,7 @@ export default function ProfileForm() {
 
     const isSaveButtonDisabled = () => {
         const phoneRegex = /^\(?([0-9]{2})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
-        return file === null || jobTitle.length === 0 || currentCompany.length === 0 || about.length === 0 || phone.length === 0 || phoneRegex.test(phone) === false || isUploading;
+        return !file || jobTitle.length === 0 || currentCompany.length === 0 || about.length === 0 || phone.length === 0 || phoneRegex.test(phone) === false || isUploading;
     }
     const handleDropZoneDrop = useCallback(
         (_dropFiles, acceptedFiles, _rejectedFiles) => { setFile((file) => acceptedFiles[0]); setIsCropModalShown(true) },
